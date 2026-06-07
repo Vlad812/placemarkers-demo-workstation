@@ -1,0 +1,24 @@
+services:
+  buggregator:
+    image: ghcr.io/buggregator/server:latest
+    container_name: buggregator
+    ports:
+      - "8000:8000"    # Web UI
+      - "1025:1025"    # SMTP
+      - "9912:9912"    # dump
+      - "9913:9913"    # Monolog/PSR-3
+      - "3000:3000"    # Sentry
+    environment:
+      - APP_ENV=production
+    networks:
+      - place_markers_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=place_markers_net"
+      - "traefik.http.routers.buggregator.rule=Host(`buggregator.placemarkers.local`)"
+      - "traefik.http.routers.buggregator.entrypoints=web"
+      - "traefik.http.services.buggregator.loadbalancer.server.port=8000"
+
+networks:
+  place_markers_net:
+    external: true

@@ -1,0 +1,21 @@
+services:
+  traefik:
+    image: traefik:v3.4
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - place_markers_net
+    labels:
+      - "traefik.docker.network=place_markers_net"
+
+networks:
+  place_markers_net:
+    external: true

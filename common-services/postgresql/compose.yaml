@@ -1,0 +1,112 @@
+x-pg-placemarkers-service: &pg_placemarkers_service
+  image: postgres:17-alpine
+  restart: unless-stopped
+  networks:
+    - place_markers_net
+
+services:
+  # === PRIMARY ===
+  cs-pg-placemarkers-primary:
+    <<: *pg_placemarkers_service
+    container_name: cs-pg-placemarkers-primary
+    environment:
+      POSTGRES_USER: my_postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: placemarkers_db
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5444:5432"
+    volumes:
+      - placemarkers_pg_data:/var/lib/postgresql/data
+      - ./Init/placemarkers:/docker-entrypoint-initdb.d/:ro
+    command:
+      - postgres
+      - -c
+      - wal_level=replica
+      - -c
+      - max_wal_senders=10
+      - -c
+      - max_replication_slots=10
+      - -c
+      - listen_addresses=*
+      - -c
+      - max_wal_size=2GB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U my_postgres -d placemarkers_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # === REPLICA ===
+  cs-pg-placemarkers-replica:
+    <<: *pg_placemarkers_service
+    container_name: cs-pg-placemarkers-replica
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      PRIMARY_HOST: cs-pg-placemarkers-primary
+      PRIMARY_PORT: "5432"
+      REPLICATION_USER: replicator
+      REPLICATION_PASSWORD: replica_password
+      POSTGRES_USER: my_postgres
+      POSTGRES_DB: placemarkers_db
+    volumes:
+      - placemarkers_pg_replica_data:/var/lib/postgresql/data
+      - ./Init/placemarkers-replica/bootstrap.sh:/usr/local/bin/replica-bootstrap.sh:ro
+    depends_on:
+      cs-pg-placemarkers-primary:
+        condition: service_healthy
+    user: postgres
+    ports:
+      - "5443:5432"
+    entrypoint:
+      - /bin/sh
+      - /usr/local/bin/replica-bootstrap.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U my_postgres -d placemarkers_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # === AUTH DB ===
+  cs-pg-auth:
+    image: postgres:17-alpine
+    container_name: cs-pg-auth
+    environment:
+      POSTGRES_USER: my_postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: placemarkers_user_db
+    ports:
+      - "5445:5432"
+    volumes:
+      - placemarkers_auth_pg_data:/var/lib/postgresql/data
+      - ./Init/auth:/docker-entrypoint-initdb.d/
+    restart: unless-stopped
+    networks:
+      - place_markers_net
+
+  # === PGADMIN ===
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin-placemarkers
+    ports:
+      - "5446:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - cs-pg-placemarkers-primary
+      - cs-pg-auth
+    restart: unless-stopped
+    networks:
+      - place_markers_net
+
+volumes:
+  placemarkers_pg_data:
+  placemarkers_pg_replica_data:
+  placemarkers_auth_pg_data:
+
+networks:
+  place_markers_net:
+    external: true
