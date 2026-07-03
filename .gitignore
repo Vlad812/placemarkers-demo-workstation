@@ -1,0 +1,9 @@
+/.idea
+/main-services/app-frontend/
+/main-services/api-placemarkers-database/
+/main-services/api-placemarkers-search/
+/doc/_draft/
+/doc/code_ref/
+/main-services/notification-provider/
+/main-services/auth-service/
+/main-services/api-placemarkers-collection/
