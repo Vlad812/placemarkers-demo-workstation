@@ -12,7 +12,9 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - place_markers_net
+      place_markers_net:
+        aliases:
+          - api.placemarkers.local
     labels:
       - "traefik.docker.network=place_markers_net"
 
