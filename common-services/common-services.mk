@@ -55,10 +55,40 @@ cs-postgresql-down:
 	@echo down postgresql
 	docker compose -f $(COMMON_SERVICES_DIR)/postgresql/compose.yaml -p $(PROJECT_GROUP_COMMON_SERVICE) down -v
 
+.PHONY: cs-mongodb-up cs-mongodb-down
+
+cs-mongodb-up:
+	@echo up mongodb
+	docker compose -f $(COMMON_SERVICES_DIR)/mongodb/compose.yaml -p $(PROJECT_GROUP_COMMON_SERVICE) up -d
+
+cs-mongodb-down:
+	@echo down mongodb
+	docker compose -f $(COMMON_SERVICES_DIR)/mongodb/compose.yaml -p $(PROJECT_GROUP_COMMON_SERVICE) down -v
+
+.PHONY: cs-rabbit-up cs-rabbit-down
+
+cs-rabbit-up:
+	@echo up rabbit
+	docker compose -f $(COMMON_SERVICES_DIR)/rabbit/compose.yaml -p $(PROJECT_GROUP_COMMON_SERVICE) up -d
+
+cs-rabbit-down:
+	@echo down rabbit
+	docker compose -f $(COMMON_SERVICES_DIR)/rabbit/compose.yaml -p $(PROJECT_GROUP_COMMON_SERVICE) down -v
+
+.PHONY: cs-redis-up cs-redis-down
+
+cs-redis-up:
+	@echo up redis
+	docker compose -f $(COMMON_SERVICES_DIR)/redis/compose.yaml -p $(PROJECT_GROUP_COMMON_SERVICE) up -d
+
+cs-redis-down:
+	@echo down redis
+	docker compose -f $(COMMON_SERVICES_DIR)/redis/compose.yaml -p $(PROJECT_GROUP_COMMON_SERVICE) down -v
+
 .PHONY: cs-all-up cs-all-down cs-all-init
 
 cs-all-init: cs-pg-placemarkers-init cs-pg-auth-init
 
-cs-all-up: cs-traefik-up cs-buggregator-up cs-postgresql-up
+cs-all-up: cs-traefik-up cs-buggregator-up cs-postgresql-up cs-mongodb-up cs-rabbit-up cs-redis-up
 
-cs-all-down: cs-buggregator-down cs-traefik-down cs-postgresql-down
+cs-all-down: cs-redis-down cs-rabbit-down cs-mongodb-down cs-buggregator-down cs-traefik-down cs-postgresql-down

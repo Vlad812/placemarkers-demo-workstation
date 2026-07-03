@@ -1,0 +1,51 @@
+services:
+  cs-redis:
+    image: redis:7-alpine
+    container_name: cs-redis
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --save
+      - "60"
+      - "1"
+    ports:
+      - "6379:6379"
+    volumes:
+      - placemarkers_redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - place_markers_net
+
+  cs-redisinsight:
+    image: redis/redisinsight:latest
+    container_name: cs-redisinsight
+    restart: unless-stopped
+    environment:
+      RI_ACCEPT_TERMS_AND_CONDITIONS: "true"
+      RI_REDIS_HOST: cs-redis
+      RI_REDIS_PORT: "6379"
+      RI_REDIS_ALIAS: placemarkers
+    ports:
+      - "5540:5540"
+    volumes:
+      - placemarkers_redisinsight_data:/data
+    depends_on:
+      cs-redis:
+        condition: service_healthy
+    networks:
+      - place_markers_net
+
+volumes:
+  placemarkers_redis_data:
+  placemarkers_redisinsight_data:
+
+networks:
+  place_markers_net:
+    external: true

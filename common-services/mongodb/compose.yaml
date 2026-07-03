@@ -1,0 +1,38 @@
+services:
+  cs-mongo:
+    image: mongo:6
+    container_name: cs-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: placemarkers
+    volumes:
+      - placemarkers_mongo_data:/data/db
+    restart: unless-stopped
+    networks:
+      - place_markers_net
+
+  cs-mongo-express:
+    image: mongo-express:latest
+    container_name: cs-mongo-express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+      ME_CONFIG_MONGODB_URL: mongodb://root:root@cs-mongo:27017/
+      ME_CONFIG_BASICAUTH: false
+    depends_on:
+      - cs-mongo
+    networks:
+      - place_markers_net
+
+volumes:
+  placemarkers_mongo_data:
+
+networks:
+  place_markers_net:
+    external: true
