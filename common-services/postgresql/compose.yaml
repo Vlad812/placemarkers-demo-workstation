@@ -83,6 +83,12 @@ services:
       - placemarkers_auth_pg_data:/var/lib/postgresql/data
       - ./Init/auth:/docker-entrypoint-initdb.d/
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U my_postgres -d placemarkers_user_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     networks:
       - place_markers_net
 
