@@ -13,11 +13,11 @@ services:
     volumes:
       - placemarkers_rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q check_running && rabbitmq-diagnostics -q check_port_connectivity"]
       interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
     networks:
       - place_markers_net
 
