@@ -11,25 +11,35 @@
 - **Buggregator**: `latest`
 
 ## Что делает (кратко)
-
-1. Пользователь может делать метки на Yandex карте. Добавлять им названия, тип, теги. И сохранять в базу данных.
-2. Пользователь может делать поиск по радиусу. Задать окружность с произвольным радиусом. Применить фильтры поиска. Может сохранять результаты поиска меток и отображать их на карте.   
-3) Создавать свой собственный набор тегов.
+1. Пользователь может делать метки на Yandex карте. Добавлять им названия, тип, теги, описания. И сохранять в базу данных.
+2. Пользователь может делать поиск на картеи по радиусу. Задать окружность с произвольным радиусом. Применить фильтры поиска. Может сохранять результаты поиска меток и отображать их на карте. 
+3. Создавать свой собственный набор тегов.
 
 Также есть функуционал регистрации, смены пароля, авторизации (JWT). 
 
-Вот небольшое демо-видео, которое демонстрирует функционал приложения >>> : [https://disk.yandex.ru/i/xU0GQ61pC3njjQ](https://disk.yandex.ru/i/xU0GQ61pC3njjQ)
+---
+
+> **🎬 Демо-видео:** небольшое видео, которое демонстрирует функционал приложения — [смотреть на Яндекс.Диске](https://disk.yandex.ru/i/xU0GQ61pC3njjQ)
+---
 
 Приложение состоимт из слежующих сервисов:
 
 ## Микросервисы (main-services)
-
 - [app-frontend](https://github.com/Vlad812/placemarkers-demo-app-frontend.git) — BFF (Backend For Frontend), отдает пользовательский интерфейс (UI) и проксирует запросы к внутренним микросервисам, хранит сессию в Redis.
 - [api-placemarkers-database](https://github.com/Vlad812/placemarkers-demo-api-database.git) — сервис записи (CQRS Write Model), отвечающий за создание, обновление и удаление меток (работает с Primary БД PostgreSQL).
 - [api-placemarkers-search](https://github.com/Vlad812/placemarkers-demo-api-search.git) — сервис чтения (CQRS Read Model) для быстрого геопространственного поиска меток по радиусу (работает с Replica БД PostgreSQL).
 - [auth-service](https://github.com/Vlad812/placemarkers-demo-auth-service.git) — сервис аутентификации и авторизации, отвечает за выпуск и проверку JWT-токенов, регистрацию пользователей
 - [notification-provider](https://github.com/Vlad812/placemarkers-demo-notification-provider.git) — сервис уведомлений, асинхронно обрабатывающий отправку писем (через RabbitMQ).
 - [api-placemarkers-collection](https://github.com/Vlad812/placemarkers-demo-api-collection.git) — сервис для работы с пользовательскими коллекциями гео-меток (использует MongoDB).
+
+## Общие сервисы (common-services)
+
+- **traefik** — reverse proxy / API Gateway, единая точка входа для внешнего HTTP-трафика к микросервисам.
+- **postgresql** — PostgreSQL / PostGIS: Primary и Replica для гео-меток, отдельная БД для `auth-service`; включает pgAdmin.
+- **redis** — хранилище сессий BFF (`app-frontend`); включает RedisInsight.
+- **rabbit** — брокер сообщений RabbitMQ для асинхронных событий (уведомления и т.п.); включает management UI.
+- **mongodb** — документоориентированное хранилище для коллекций меток (`api-placemarkers-collection`); включает Mongo Express.
+- **buggregator** — локальный debug/SMTP-сервер для просмотра логов, дампов и писем в dev-окружении.
 
 
 ## Что демонстрирует проект
@@ -46,7 +56,6 @@
 - **CQRS на уровне системы (Command Query Responsibility Segregation)**: Физическое разделение сервисов для операций записи и чтения. Сервис `api-placemarkers-database` обрабатывает мутации данных (сохраняет в Primary БД), а `api-placemarkers-search` отвечает за быстрый гео-поиск (читает из Replica БД).
 - **API Gateway / Reverse Proxy**: Использование Traefik как единой точки входа, маршрутизирующей внешний трафик к нужным микросервисам на основе путей.
 - **Database per Service (База данных на сервис)**: Изоляция данных между различными доменами (например, отдельные базы/схемы для авторизации и гео-меток), что обеспечивает независимость сервисов друг от друга.
-
 
 ### 2. Паттерны на уровне приложения (внутри сервисов)
 
@@ -71,14 +80,13 @@
 - **TwigBundle**: Шаблонизатор (используется в BFF `app-frontend` и сервисе уведомлений `notification-provider`).
 - **FrameworkBundle**: Базовый каркас Symfony во всех сервисах. (Включает в себя компонент **Messenger** для работы с RabbitMQ).
 
-
 ## Как устроен
 
 ![Docker Containers](doc/src/pl_docker_containers.jpg)
 
 ### Полная схема архитектуры
 
-Полная схема архитектуры
+![Полная схема архитектуры](doc/src/pl_schema_services.jpg)
 
 ### Связи сервис → база
 
