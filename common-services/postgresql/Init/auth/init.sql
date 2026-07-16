@@ -33,7 +33,7 @@ CREATE INDEX idx_refresh_tokens_expires ON refresh_tokens(expires_at);
 -- Тестовый пользователь (пароль: 12345678)
 INSERT INTO users (id, email, password_hash, role, is_active, email_verification_token, password_reset_token, email_verified_at, created_at, updated_at)
 VALUES (
-     gen_random_uuid(),
+    'b9ebe312-4795-40a2-abbc-10c751076a53',
     'test@example.com',
     '$2y$12$gQN7L5SeoIlKeS95TeiSOO0NQTb3t9Lq7ysgntikow0kdgCJfkdzC',
     'user',
