@@ -3,9 +3,9 @@ include $(PROJECT_ROOT)/config.mk
 include common-services/common-services.mk
 include main-services/main-services.mk
 
-.PHONY: create-network remove-network app-setup app-up app-down app-clear
+.PHONY: create-network remove-network app-setup app-up app-down app-clear clone-repos
 
-app-setup: create-network ms-all-build ms-all-init cs-all-init
+app-setup: create-network clone-repos ms-all-build ms-all-init cs-all-init
 app-up: create-network cs-all-up ms-all-up
 app-down: ms-all-down cs-all-down
 app-clear: ms-all-down cs-all-down remove-network
@@ -15,3 +15,6 @@ create-network:
 
 remove-network:
 	docker network rm $(NETWORK_NAME) 2>/dev/null || true
+
+clone-repos:
+	bash util/clone-repo.sh
