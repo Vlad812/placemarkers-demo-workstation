@@ -103,7 +103,9 @@
 
 Структура каталогов: 
 
-
+<p align="center">
+  <img src="doc/src/pl_catalogs.jpg" alt="Структура каталогов" />
+</p>
 
 > `common-services` — содержат общие сервисы. Каждый имеет свой docker compose. Хранятся в этом репозитории.
 
